@@ -1,46 +1,187 @@
-use core::ptr::NonNull;
+//! Implementations of linked lists with owned nodes.
+
+use core::{
+    ptr::NonNull,
+    marker::PhantomData,
+};
 use alloc::boxed::Box;
+
+/// A singly-linked list with owned nodes.
+///
+/// The `LinkedList` allows pushing at either end and popping
+/// at the front elements in constant time.
+pub struct LinkedList<T> {
+    head: Option<NonNull<Node<T>>>,
+    tail: Option<NonNull<Node<T>>>,
+    len: usize,
+
+    /// Indicates that `LinkedList` owns some `Box<Node>`
+    marker: PhantomData<Box<Node<T>>>,
+}
 
 struct Node<T> {
     element: T,
     next: Option<NonNull<Node<T>>>,
 }
 
-pub struct LinkedList<T> {
-    head: Option<NonNull<Node<T>>>,
-    tail: Option<NonNull<Node<T>>>,
-    len: usize,
-}
-
 impl<T> LinkedList<T> {
+    /// Creates an empty `LinkedList`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use collections::linked_list::LinkedList;
+    ///
+    /// let list: LinkedList<u32> = LinkedList::new();
+    /// ```
+    #[inline]
     pub fn new() -> Self {
         Self {
             head: None,
             tail: None,
             len: 0,
+            marker: PhantomData,
         }
     }
 
+    /// Returns the length of the `LinkedList°.
+    ///
+    /// This operation should compute in *O*(1) time.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use collections::linked_list::LinkedList;
+    ///
+    /// let mut list = LinkedList::new();
+    ///
+    /// list.push_front(2);
+    /// assert_eq!(list.len(), 1);
+    ///
+    /// list.push_front(1);
+    /// assert_eq!(list.len(), 2);
+    ///
+    /// list.push_back(3);
+    /// assert_eq!(list.len(), 3);
+    /// ```
+    #[inline]
     pub fn len(&self) -> usize {
         self.len
     }
 
+    /// Provides a reference to the front element,
+    /// or `None` if the list is empty.
+    ///
+    /// This operation should compute in *O*(1) time.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use collections::linked_list::LinkedList;
+    ///
+    /// let mut list = LinkedList::new();
+    /// assert_eq!(list.front(), None);
+    ///
+    /// list.push_front(1);
+    /// assert_eq!(list.front(), Some(&1));
+    /// ```
+    #[inline]
     pub fn front(&self) -> Option<&T> {
         self.head.as_ref().map(|node| &unsafe { node.as_ref() }.element)
     }
 
+    /// Provides a mutable reference to the front element,
+    /// or `None` if the list is empty.
+    ///
+    /// This operation should compute in *O*(1) time.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use collections::linked_list::LinkedList;
+    ///
+    /// let mut list = LinkedList::new();
+    /// assert_eq!(list.front(), None);
+    ///
+    /// list.push_front(1);
+    /// assert_eq!(list.front(), Some(&1));
+    ///
+    /// match list.front_mut() {
+    ///     None => {},
+    ///     Some(x) => *x = 5,
+    /// }
+    /// assert_eq!(list.front(), Some(&5));
+    /// ```
+    #[inline]
     pub fn front_mut(&mut self) -> Option<&mut T> {
         self.head.as_mut().map(|node| &mut unsafe { node.as_mut() }.element)
     }
 
+    /// Provides a reference to the back element,
+    /// or `None` if the list is empty.
+    ///
+    /// This operation should compute in *O*(1) time.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use collections::linked_list::LinkedList;
+    ///
+    /// let mut list = LinkedList::new();
+    /// assert_eq!(list.back(), None);
+    ///
+    /// list.push_back(1);
+    /// assert_eq!(list.back(), Some(&1));
+    /// ```
+    #[inline]
     pub fn back(&self) -> Option<&T> {
         self.tail.as_ref().map(|node| &unsafe { node.as_ref() }.element)
     }
 
+    /// Provides a mutable reference to the back element,
+    /// or `None` if the list is empty.
+    ///
+    /// This operation should compute in *O*(1) time.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use collections::linked_list::LinkedList;
+    ///
+    /// let mut list = LinkedList::new();
+    /// assert_eq!(list.back(), None);
+    ///
+    /// list.push_back(1);
+    /// assert_eq!(list.back(), Some(&1));
+    ///
+    /// match list.back_mut() {
+    ///     None => {},
+    ///     Some(x) => *x = 5,
+    /// }
+    /// assert_eq!(list.back(), Some(&5));
+    /// ```
+    #[inline]
     pub fn back_mut(&mut self) -> Option<&mut T> {
         self.tail.as_mut().map(|node| &mut unsafe { node.as_mut() }.element)
     }
 
+    /// Adds an element first in the list.
+    ///
+    /// This operation should compute in *O*(1) time.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use collections::linked_list::LinkedList;
+    ///
+    /// let mut list = LinkedList::new();
+    ///
+    /// list.push_front(2);
+    /// assert_eq!(list.front().unwrap(), &2);
+    ///
+    /// list.push_front(1);
+    /// assert_eq!(list.front().unwrap(), &1);
+    /// ```
     pub fn push_front(&mut self, element: T) {
         let node = Box::new(Node {
             element,

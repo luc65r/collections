@@ -197,12 +197,103 @@ impl<T> LinkedList<T> {
         self.len += 1;
     }
 
+    /// Appends an element to the back of a list.
+    ///
+    /// This operation should compute in *O*(1) time.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use collections::linked_list::LinkedList;
+    ///
+    /// let mut list = LinkedList::new();
+    /// list.push_back(1);
+    /// list.push_back(3);
+    /// assert_eq!(3, *list.back().unwrap());
+    /// ```
+    pub fn push_back(&mut self, element: T) {
+        let node = Box::new(Node {
+            element,
+            next: None,
+        });
+        let node = Some(Box::leak(node).into());
+
+        if let Some(tail) = self.tail {
+            unsafe { (*tail.as_ptr()).next = node; }
+        } else {
+            self.head = node;
+        }
+
+        self.tail = node;
+        self.len += 1;
+    }
+
+    /// Removes the first element and returns it,
+    /// or `None` if the list is empty.
+    ///
+    /// This operation should compute in *O*(1) time.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use collections::linked_list::LinkedList;
+    ///
+    /// let mut list = LinkedList::new();
+    /// assert_eq!(list.pop_front(), None);
+    ///
+    /// list.push_front(1);
+    /// list.push_front(3);
+    /// assert_eq!(list.pop_front(), Some(3));
+    /// assert_eq!(list.pop_front(), Some(1));
+    /// assert_eq!(list.pop_front(), None);
+    /// ```
     pub fn pop_front(&mut self) -> Option<T> {
         self.head.map(|node| {
             let node = unsafe { Box::from_raw(node.as_ptr()) };
             self.head = node.next;
 
             if self.head.is_none() {
+                self.tail = None;
+            }
+
+            self.len -= 1;
+            node.element
+        })
+    }
+
+    /// Removes the last element from a list and returns it,
+    /// or `None` if it is empty.
+    ///
+    /// This operation should compute in *O*(*n*) time.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use collections::linked_list::LinkedList;
+    ///
+    /// let mut list = LinkedList::new();
+    /// assert_eq!(list.pop_back(), None);
+    /// list.push_back(1);
+    /// list.push_back(3);
+    /// assert_eq!(list.pop_back(), Some(3));
+    /// ```
+    pub fn pop_back(&mut self) -> Option<T> {
+        self.tail.map(|node| {
+            let node = unsafe { Box::from_raw(node.as_ptr()) };
+
+            if let Some(penultimate) = {
+                let mut last = self.head.unwrap();
+                let mut penultimate = None;
+                while let Some(l) = unsafe { (*last.as_ptr()).next } {
+                    penultimate = Some(last);
+                    last = l;
+                }
+                penultimate
+            } {
+                unsafe { (*penultimate.as_ptr()).next = None; }
+                self.tail = Some(penultimate);
+            } else {
+                self.head = None;
                 self.tail = None;
             }
 
@@ -250,6 +341,21 @@ mod tests {
     }
 
     #[test]
+    fn push_back() {
+        let mut list: LinkedList<u32> = LinkedList::new();
+
+        list.push_back(4);
+        assert_eq!(list.len(), 1);
+        assert_eq!(list.front(), Some(&4));
+        assert_eq!(list.back(), Some(&4));
+
+        list.push_back(6);
+        assert_eq!(list.len(), 2);
+        assert_eq!(list.front(), Some(&4));
+        assert_eq!(list.back(), Some(&6));
+    }
+
+    #[test]
     fn pop_front() {
         let mut list: LinkedList<u32> = LinkedList::new();
 
@@ -261,6 +367,22 @@ mod tests {
         assert_eq!(list.pop_front(), Some(7));
         assert_eq!(list.pop_front(), Some(12));
         assert_eq!(list.pop_front(), None);
+
+        mem::forget(list);
+    }
+
+    #[test]
+    fn pop_back() {
+        let mut list: LinkedList<u32> = LinkedList::new();
+
+        assert_eq!(list.pop_back(), None);
+
+        list.push_back(12);
+        list.push_back(7);
+
+        assert_eq!(list.pop_back(), Some(7));
+        assert_eq!(list.pop_back(), Some(12));
+        assert_eq!(list.pop_back(), None);
 
         mem::forget(list);
     }

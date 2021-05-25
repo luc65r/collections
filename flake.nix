@@ -34,6 +34,7 @@
       devShell = pkgs.mkShell {
         nativeBuildInputs = with pkgs; [
           rustChannel.rust
+          cargo-valgrind
         ];
 
         # rust-analyzer is broken with 1.50

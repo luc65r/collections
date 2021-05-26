@@ -326,6 +326,65 @@ impl<T> LinkedList<T> {
     pub fn clear(&mut self) {
         *self = Self::new();
     }
+
+    /// Insert an element at position `index` within the LinkedList.
+    ///
+    /// This operation should compute in *O*(*n*) time.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `index` > `len`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use collections::linked_list::LinkedList;
+    ///
+    /// let mut list = LinkedList::new();
+    ///
+    /// list.insert(0, 4);
+    /// assert_eq!(list.len(), 1);
+    /// assert_eq!(list.front(), Some(&4));
+    ///
+    /// list.insert(1, 2);
+    /// list.insert(1, 7);
+    /// assert_eq!(list.len(), 3);
+    /// assert_eq!(list.front(), Some(&4));
+    /// assert_eq!(list.back(), Some(&2));
+    /// ```
+    ///
+    /// ```should_panic
+    /// use collections::linked_list::LinkedList;
+    ///
+    /// let mut list = LinkedList::new();
+    ///
+    /// list.insert(5, 6);
+    /// ```
+    pub fn insert(&mut self, index: usize, element: T) {
+        let mut before = None;
+        let mut after = self.head;
+        for _ in 0..index {
+            before = after;
+            after = unsafe { after.unwrap().as_ref() }.next;
+        }
+
+        let node = Box::new(Node {
+            element,
+            next: after,
+        });
+        let node = Some(Box::leak(node).into());
+
+        if let Some(b) = before {
+            unsafe { (*b.as_ptr()).next = node; }
+        } else {
+            self.head = node;
+        }
+        if after.is_none() {
+            self.tail = node;
+        }
+
+        self.len += 1;
+    }
 }
 
 impl<T> Drop for LinkedList<T> {

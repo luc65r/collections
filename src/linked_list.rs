@@ -301,6 +301,31 @@ impl<T> LinkedList<T> {
             node.element
         })
     }
+
+    /// Removes all elements from the `LinkedList`.
+    ///
+    /// This operation should compute in *O*(*n*) time.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use collections::linked_list::LinkedList;
+    ///
+    /// let mut list = LinkedList::new();
+    ///
+    /// list.push_front(2);
+    /// list.push_front(1);
+    /// assert_eq!(list.len(), 2);
+    /// assert_eq!(list.front(), Some(&1));
+    ///
+    /// list.clear();
+    /// assert_eq!(list.len(), 0);
+    /// assert_eq!(list.front(), None);
+    /// ```
+    #[inline]
+    pub fn clear(&mut self) {
+        *self = Self::new();
+    }
 }
 
 impl<T> Drop for LinkedList<T> {

@@ -284,7 +284,7 @@ impl<T> LinkedList<T> {
             if let Some(penultimate) = {
                 let mut last = self.head.unwrap();
                 let mut penultimate = None;
-                while let Some(l) = unsafe { (*last.as_ptr()).next } {
+                while let Some(l) = unsafe { last.as_ref() }.next {
                     penultimate = Some(last);
                     last = l;
                 }

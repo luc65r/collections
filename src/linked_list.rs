@@ -3,6 +3,7 @@
 use core::{
     ptr::NonNull,
     marker::PhantomData,
+    ops::{Index, IndexMut},
 };
 use alloc::boxed::Box;
 
@@ -448,6 +449,73 @@ impl<T> Drop for LinkedList<T> {
         while let Some(n) = node {
             node = unsafe { Box::from_raw(n.as_ptr()) }.next;
         }
+    }
+}
+
+impl<T> Index<usize> for LinkedList<T> {
+    type Output = T;
+
+    /// Provides a reference to the element at position `index`.
+    ///
+    /// This operation should compute in *O*(*n*) time.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `index` >= `len`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use collections::linked_list::LinkedList;
+    ///
+    /// let mut list = LinkedList::new();
+    ///
+    /// list.push_front(5);
+    /// list.push_back(3);
+    /// assert_eq!(list[0], 5);
+    /// assert_eq!(list[1], 3);
+    /// ```
+    /// ```should_panic
+    /// use collections::linked_list::LinkedList;
+    ///
+    /// let mut list = LinkedList::new();
+    ///
+    /// let n: u32 = list[5];
+    /// ```
+    fn index(&self, index: usize) -> &T {
+        self.get(index).expect("no element at that position")
+    }
+}
+
+impl<T> IndexMut<usize> for LinkedList<T> {
+    /// Provides a mutable reference to the element at position `index`.
+    ///
+    /// This operation should compute in *O*(*n*) time.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `index` >= `len`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use collections::linked_list::LinkedList;
+    ///
+    /// let mut list = LinkedList::new();
+    ///
+    /// list.push_front(5);
+    /// list[0] = 1;
+    /// assert_eq!(list[0], 1);
+    /// ```
+    /// ```should_panic
+    /// use collections::linked_list::LinkedList;
+    ///
+    /// let mut list = LinkedList::new();
+    ///
+    /// list[3] = 12;
+    /// ```
+    fn index_mut(&mut self, index: usize) -> &mut T {
+        self.get_mut(index).expect("no element at that position")
     }
 }
 

@@ -165,6 +165,61 @@ impl<T> LinkedList<T> {
         self.tail.as_mut().map(|node| &mut unsafe { node.as_mut() }.element)
     }
 
+    /// Provides a reference to the element at position `index`,
+    /// or `None` if there is no element at that position.
+    ///
+    /// This operation should compute in *O*(*n*) time.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use collections::linked_list::LinkedList;
+    ///
+    /// let mut list = LinkedList::new();
+    /// assert_eq!(list.get(0), None);
+    ///
+    /// list.push_back(1);
+    /// list.push_back(7);
+    /// assert_eq!(list.get(1), Some(&7));
+    /// assert_eq!(list.get(4), None);
+    /// ```
+    pub fn get(&self, index: usize) -> Option<&T> {
+        let mut node = self.head;
+        for _ in 0..index {
+            node = unsafe { node?.as_ref() }.next;
+        }
+        node.as_ref().map(|node| unsafe { &(*node.as_ptr()).element })
+    }
+
+    /// Provides a mutable reference to the element at position `index`,
+    /// or `None` if there is no element at that position.
+    ///
+    /// This operation should compute in *O*(*n*) time.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use collections::linked_list::LinkedList;
+    ///
+    /// let mut list = LinkedList::new();
+    ///
+    /// list.push_front(1);
+    /// assert_eq!(list.get(0), Some(&1));
+    ///
+    /// match list.get_mut(0) {
+    ///     None => {},
+    ///     Some(x) => *x = 5,
+    /// }
+    /// assert_eq!(list.get(0), Some(&5));
+    /// ```
+    pub fn get_mut(&mut self, index: usize) -> Option<&mut T> {
+        let mut node = self.head;
+        for _ in 0..index {
+            node = unsafe { node?.as_ref() }.next;
+        }
+        node.as_ref().map(|node| unsafe { &mut (*node.as_ptr()).element })
+    }
+
     /// Adds an element first in the list.
     ///
     /// This operation should compute in *O*(1) time.
